@@ -1,0 +1,24 @@
+﻿@page "/clientes"
+@using Society.Models;
+@using Society.Services;
+@inject ClientesRepository ClientesRepository
+
+
+<h3>Clientes</h3>
+
+@foreach(var item in cliente)
+{
+    <h1>Id: @item.Id</h1>
+    <h1>Nome: @item.Nome</h1>
+    <h1>CPF: @item.Cpf</h1>
+    <h1>Telefone: @item.Telefone</h1>
+
+}
+
+@code {
+    private List<Cliente> cliente;
+    protected override async Task OnInitializedAsync()
+    {
+        cliente = await ClientesRepository.ListarClientesAsync();
+    }
+}
