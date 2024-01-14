@@ -47,7 +47,7 @@ namespace Society.Services
             {
                 var cliente =  await _dbContext.Clientes.FindAsync(id);
                 _dbContext.Clientes.Remove(cliente);
-                _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
             }
             else
             {

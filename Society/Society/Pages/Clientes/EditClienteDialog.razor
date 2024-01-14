@@ -45,11 +45,11 @@
         }
     }
 
-    void Submit()
+    async Task Submit()
     {
         if (Cliente != null)
         {
-            ClientesRepository.UpdateClienteAsync(Id, Cliente);
+            await ClientesRepository.UpdateClienteAsync(Id, Cliente);
         }
         MudDialog.Close(DialogResult.Ok(true));
     }

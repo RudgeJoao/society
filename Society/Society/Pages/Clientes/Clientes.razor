@@ -84,14 +84,14 @@
 
         if (result is true)
         {
-            Excluir(id);  
+            await Excluir(id);  
             clientes = await ClientesRepository.ListarClientesAsync();
         }
     }
 
-    void Excluir(int id)
+    async Task Excluir(int id)
     {
-        ClientesRepository.DeleteClienteAsync(id);
+        await ClientesRepository.DeleteClienteAsync(id);
     }
 
 
