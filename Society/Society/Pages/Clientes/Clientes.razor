@@ -1,0 +1,99 @@
+﻿@page "/clientes"
+@using Society.Models;
+@using Society.Services;
+@inject ClientesRepository ClientesRepository
+@inject IDialogService DialogService
+
+
+<MudText Typo="Typo.h2">Clientes</MudText>
+<MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.PersonAddAlt1" Color="Color.Primary" @onclick="OpenDialogCreate">Cadastrar novo cliente</MudButton>
+<MudTable Items="@clientes" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Nome</MudTh>
+        <MudTh>Cpf</MudTh>
+        <MudTh>Telefone</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Nome">@context.Nome</MudTd>
+        <MudTd DataLabel="CPF">@context.Cpf</MudTd>
+        <MudTd DataLabel="Telefone" HideSmall="_hidePosition">@context.Telefone</MudTd>
+        <MudTd>
+            <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Delete" Size="Size.Small" OnClick="@(() => OnButtonDeleteClicked(@context.Id))" />
+        </MudTd>
+        <MudTd>
+            <MudFab Style="@($"background:{Colors.Amber.Darken2}; color:{Colors.Shades.White};")" StartIcon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => OpenDialogEdit(@context.Id,context))" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+
+<MudMessageBox @ref="mboxExcluir" Title="AVISO!" CancelText="Cancelar">
+    <MessageContent>
+        Excluir <b><i>NÃO</i></b> pode ser desfeito!
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">Excluir</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+
+@code {
+    //MudBlazor variaveis
+    private bool _hidePosition;
+    private bool _loading;
+    private IEnumerable<Cliente> clientes = new List<Cliente>();
+    MudMessageBox mboxExcluir { get; set; }
+    MudMessageBox mboxEditar { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        clientes = await ClientesRepository.ListarClientesAsync();
+    }
+
+    private async Task  OpenDialogCreate()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var dialog = DialogService.Show<CreateClienteDialog>("Cadastrar Clientes", options);
+        var result = await dialog.Result;
+
+        if (result?.Data is bool success && success)
+        {
+           clientes =  await ClientesRepository.ListarClientesAsync();
+        }
+
+    }
+
+    private async Task OpenDialogEdit(int id, Cliente cliente)
+    {
+        var parameters = new DialogParameters
+        {
+        { "Id", id},
+        { "Cliente", cliente }
+        };
+
+
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var dialog = DialogService.Show<EditClienteDialog>("Editar cliente",parameters,options);
+        var result = await dialog.Result;
+    }
+
+    private async void OnButtonDeleteClicked(int id)
+    {
+        bool? result = await mboxExcluir.Show();
+        StateHasChanged();
+
+        if (result is true)
+        {
+            Excluir(id);  
+            clientes = await ClientesRepository.ListarClientesAsync();
+        }
+    }
+
+    void Excluir(int id)
+    {
+        ClientesRepository.DeleteClienteAsync(id);
+    }
+
+
+
+}
