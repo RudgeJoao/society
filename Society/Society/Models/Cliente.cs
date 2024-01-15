@@ -1,4 +1,6 @@
-﻿namespace Society.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Society.Models
 {
     public class Cliente
     {

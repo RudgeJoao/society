@@ -1,0 +1,71 @@
+﻿@using Society.Models;
+@using Society.Services;
+@inject ClientesRepository ClientesRepository
+@using System.ComponentModel.DataAnnotations
+<MudDialog Style="width:50%;">
+    <DialogContent>
+        <MudForm Model="Cliente" @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+            <MudTextField T="String" Label="Nome" @bind-Value="Cliente.Nome" Required="true" RequiredError="Informe o nome!"></MudTextField>
+
+            <MudTextField T="String" Label="CPF" @bind-Value="Cliente.Cpf" Mask="@(new PatternMask("000.000.000-00"))"
+                          Required="true" RequiredError="Informe o CPF!"
+                          Validation="@(new Func<string, IEnumerable<string>>(TamanhoCpf))"></MudTextField>
+
+            <MudTextField T="String" Label="Telefone" @bind-Value="Cliente.Telefone"
+                          Required="true" RequiredError="Informe o telefone!" Mask="@(new PatternMask("(00) 00000-0000"))"></MudTextField>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public int Id { get; set; }
+    [Parameter] public Cliente Cliente { get; set; }
+
+    bool success;
+    string[] errors = { };
+    MudForm form;
+
+
+    private IEnumerable<string> TamanhoCpf(string cpf)
+    {
+        if (string.IsNullOrWhiteSpace(cpf))
+        {
+            yield return "Insira o CPF!";
+            yield break;
+        }
+        if (cpf.Count() < 14)
+        {
+            yield return "CPF muito curto";
+        }
+    }
+
+    async Task Submit()
+    {
+        if (Cliente != null)
+        {
+            await ClientesRepository.UpdateClienteAsync(Id, Cliente);
+        }
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+    void Cancel() => MudDialog.Cancel();
+
+
+
+    //private async void OnButtonEditClicked(int id)
+    //{
+
+    //}
+
+
+    //void Editar(int id, Cliente cliente)
+    //{
+    //    ClientesRepository.UpdateClienteAsync(id, cliente);
+    //}
+}
+
