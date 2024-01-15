@@ -22,8 +22,8 @@ StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configurat
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
-builder.Services.AddScoped<ClientesRepository>();
-builder.Services.AddScoped<QuadrasRepository>();
+builder.Services.AddScoped<IClientesRepository,ClientesRepository>();
+builder.Services.AddScoped<IQuadrasRepository, QuadrasRepository>();
 builder.Services.AddDbContext<DbContext, OracleDbContext>(opt =>
 {
     opt.UseOracle(Configuration["Database:ConnectionString"]);

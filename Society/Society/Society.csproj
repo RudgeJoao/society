@@ -13,6 +13,7 @@
     </PackageReference>
     <PackageReference Include="MudBlazor" Version="6.0.13" />
     <PackageReference Include="Oracle.EntityFrameworkCore" Version="6.21.120" />
+    <PackageReference Include="Radzen.Blazor" Version="4.23.9" />
   </ItemGroup>
 
 </Project>

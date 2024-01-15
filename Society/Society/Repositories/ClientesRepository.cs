@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Society.Services
 {
-    public class ClientesRepository
+    public class ClientesRepository : IClientesRepository
     {
         private readonly OracleDbContext _dbContext;
         public ClientesRepository(OracleDbContext dbContext) 

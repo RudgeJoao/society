@@ -4,7 +4,7 @@ using Society.Models;
 
 namespace Society.Repositories
 {
-    public class QuadrasRepository
+    public class QuadrasRepository : IQuadrasRepository
     {
         private readonly OracleDbContext _dbContext;
 

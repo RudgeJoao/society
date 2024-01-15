@@ -1,8 +1,9 @@
 ﻿@page "/quadras"
 @using Society.Models;
 @using Society.Repositories;
-@inject QuadrasRepository QuadrasRepository
+@inject IQuadrasRepository QuadrasRepository
 @inject IDialogService DialogService
+@using MudBlazor
 
 <MudText Typo="Typo.h2">Quadras</MudText>
 <MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.PersonAddAlt1" Color="Color.Primary" @onclick="OpenDialogCreate">Cadastrar nova quadra</MudButton>
