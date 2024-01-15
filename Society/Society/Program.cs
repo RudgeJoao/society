@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using Society.Data;
+using Society.Repositories;
 using Society.Services;
 using System.Diagnostics;
 
@@ -22,6 +23,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
 builder.Services.AddScoped<ClientesRepository>();
+builder.Services.AddScoped<QuadrasRepository>();
 builder.Services.AddDbContext<DbContext, OracleDbContext>(opt =>
 {
     opt.UseOracle(Configuration["Database:ConnectionString"]);

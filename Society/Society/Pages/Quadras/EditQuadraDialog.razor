@@ -1,0 +1,37 @@
+﻿@using Society.Repositories;
+@using Society.Models;
+@inject QuadrasRepository QuadrasRepository
+@using System.ComponentModel.DataAnnotations
+
+<MudDialog Style="width: 50%;">
+    <DialogContent>
+        <MudForm Model="quadra" @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+            <MudTextField T="String" Label="Name" @bind-Value="quadra.Name"
+                          Required="true" RequiredError="Informe o nome!"></MudTextField>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    bool success;
+    string[] errors = { };
+    MudForm form;
+    [Parameter] public int Id { get; set; }
+    [Parameter] public Quadra quadra { get; set; }
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    async Task Submit()
+    {
+        if (quadra != null)
+        {
+            await QuadrasRepository.UpdateQuadraAsync(Id,quadra);
+        }
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+    void Cancel() => MudDialog.Cancel();
+}
