@@ -10,5 +10,7 @@ namespace Society.Data
         }
         public DbSet<Cliente> Clientes { get; set; }
         public DbSet<Quadra> Quadras { get; set; }
+
+        public DbSet<Locacao> Locacoes { get; set; }
     }
 }
