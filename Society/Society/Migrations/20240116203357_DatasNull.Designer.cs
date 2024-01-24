@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Oracle.EntityFrameworkCore.Metadata;
 using Society.Data;
@@ -11,9 +12,10 @@ using Society.Data;
 namespace Society.Migrations
 {
     [DbContext(typeof(OracleDbContext))]
-    partial class OracleDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240116203357_DatasNull")]
+    partial class DatasNull
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,7 +46,7 @@ namespace Society.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Clientes", (string)null);
+                    b.ToTable("Clientes");
                 });
 
             modelBuilder.Entity("Society.Models.Locacao", b =>
@@ -73,7 +75,7 @@ namespace Society.Migrations
 
                     b.HasIndex("QuadraId");
 
-                    b.ToTable("Locacoes", (string)null);
+                    b.ToTable("Locacoes");
                 });
 
             modelBuilder.Entity("Society.Models.Quadra", b =>
@@ -90,7 +92,7 @@ namespace Society.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Quadras", (string)null);
+                    b.ToTable("Quadras");
                 });
 
             modelBuilder.Entity("Society.Models.Locacao", b =>

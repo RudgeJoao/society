@@ -1,0 +1,139 @@
+﻿@using Society.Repositories
+@using Society.Models
+@using Society.Services;
+@inject ILocacaoRepository LocacaoRepository
+@inject IClientesRepository ClientesRepository
+@inject IQuadrasRepository QuadrasRepository
+@inject IDialogService DialogService
+
+<MudDialog Style="width: 50%;">
+    <DialogContent>
+        <MudForm Model="Locacao" @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+            <MudTimePicker Label="24 hours" @bind-Time="Inicio" Required="true" RequiredError="Insira o horario"/>
+            <MudTimePicker Label="24 hours" @bind-Time="Fim" Required="true" RequiredError="Insira o horario" />
+            <MudAutocomplete T="string" Label="Cliente" @bind-Value="ClienteInput" SearchFunc="@PesquisarClientes" Variant="Variant.Outlined" Required="true" RequiredError="Informe o cliente" />
+            <MudAutocomplete T="string" Label="Quadra" @bind-Value="QuadraInput" SearchFunc="@PesquisarQuadras" Variant="Variant.Outlined" Required="true" RequiredError="Informe a quadra" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+@*        @if(Inicio != null && Fim != null)
+        {
+            <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+        }*@
+    </DialogActions>
+</MudDialog>
+
+
+<MudMessageBox @ref="mboxAviso">
+    <MessageContent>
+        <MudText Style="@($"color:{Colors.Red.Lighten1};")">@Erro</MudText>
+    </MessageContent>
+    <YesButton></YesButton>
+</MudMessageBox>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public DateTime? dia { get; set; }
+
+    MudForm form;
+    private string ClienteInput;
+    private string QuadraInput;
+    bool success;
+    string[] errors = { };
+
+    public string Erro = "";
+    MudMessageBox mboxAviso { get; set; }
+
+    Models.Locacao Locacao = new Models.Locacao();
+    private IList<Models.Locacao> Locacoes = new List<Models.Locacao>();
+
+    private Cliente Cliente;
+    private Quadra Quadra;
+    DateTime? Data = DateTime.Today;
+    TimeSpan? Inicio;
+    TimeSpan? Fim;
+
+    private IEnumerable<Cliente> Clientes = new List<Cliente>();
+    private IEnumerable<Quadra> Quadras = new List<Quadra>();
+
+    private IEnumerable<string> NomesCliente = new List<string>();
+    private IEnumerable<string> NomesQuadras = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Quadras = await QuadrasRepository.ListarQuadrasAsync();
+        NomesQuadras = Quadras.Select(x => x.Name);
+
+        Clientes = await ClientesRepository.ListarClientesAsync();
+        //NomesCliente = Clientes.Select(x => $"{x.Nome} CPF:{x.Cpf}");
+        NomesCliente = Clientes.Select(x => x.Nome);
+
+        Locacoes = await LocacaoRepository.ListarLocacoesAsync();
+    }
+
+
+    async Task Submit()
+    {
+        Locacao.Cliente = Clientes.FirstOrDefault(x => x.Nome == ClienteInput);
+        Locacao.Quadra = Quadras.FirstOrDefault(x => x.Name == QuadraInput);
+        Locacao.Inicio = dia + Inicio;
+        Locacao.Fim = dia + Fim;
+        if (Locacao != null)
+        {
+            bool inicioExiste = Locacoes.Any(x => x.Inicio == Locacao.Inicio);
+
+            bool quadraJaReservada = Locacoes.Any(x =>
+                x.Quadra.Id == Locacao.Quadra.Id && ((x.Inicio >= Locacao.Inicio && x.Inicio < Locacao.Fim) 
+                || (x.Fim > Locacao.Inicio && x.Fim <= Locacao.Fim) ||
+                (x.Inicio <= Locacao.Inicio && x.Fim >= Locacao.Fim)));
+            if (quadraJaReservada)
+            {
+                Erro = $"Quadra ja reservada entre {Inicio} - {Fim} para: {Locacao.Cliente.Nome} ";
+                return;
+            }
+            if (Inicio < new TimeSpan(12, 0, 0) || Inicio > new TimeSpan(18, 0, 0))
+            {
+                Erro = "Horarios apenas entre 12:00 e 18:00";
+                return;
+            }
+            else if (Fim > new TimeSpan(18, 0, 0) || Fim < new TimeSpan(12, 0, 0))
+            {
+                Erro = "Horarios apenas entre 12:00 e 18:00";
+                //bool? result = await mboxAviso.Show();
+                //StateHasChanged();
+                return;
+            }
+            else
+            {
+                await LocacaoRepository.CriarLocacao(Locacao);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+
+        }
+    }
+
+    void Cancel() => MudDialog.Cancel();
+
+    private async Task<IEnumerable<string>> PesquisarClientes(string value)
+    {
+
+        if (string.IsNullOrEmpty(value))
+            return NomesCliente;
+
+        var query = NomesCliente.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+        return query;
+    }
+
+    private async Task<IEnumerable<string>> PesquisarQuadras(string value)
+    {
+
+        if (string.IsNullOrEmpty(value))
+            return NomesQuadras;
+
+        var query = NomesQuadras.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+        return query;
+    }
+
+}
