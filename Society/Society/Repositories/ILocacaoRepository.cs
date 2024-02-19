@@ -7,5 +7,8 @@ namespace Society.Repositories
         Task<List<Locacao>> ListarLocacoesAsync();
 
         Task CriarLocacao(Locacao locacao);
+
+        Task UpdateLocacao(int id, Locacao locacao);
+
     }
 }

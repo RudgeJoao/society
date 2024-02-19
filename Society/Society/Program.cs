@@ -20,6 +20,7 @@ IConfiguration Configuration = new ConfigurationBuilder()
 StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
 
 // Add services to the container.
+builder.Services.AddRadzenComponents();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();

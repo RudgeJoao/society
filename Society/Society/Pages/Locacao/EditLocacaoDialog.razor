@@ -9,7 +9,7 @@
 <MudDialog Style="width: 50%;">
     <DialogContent>
         <MudForm Model="Locacao" @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
-            <MudTimePicker Label="24 hours" @bind-Time="Inicio" Required="true" RequiredError="Insira o horario"/>
+            <MudTimePicker Label="24 hours" @bind-Time="Inicio" Required="true" RequiredError="Insira o horario" />
             <MudTimePicker Label="24 hours" @bind-Time="Fim" Required="true" RequiredError="Insira o horario" />
             <MudAutocomplete T="string" Label="Cliente" @bind-Value="ClienteInput" SearchFunc="@PesquisarClientes" Variant="Variant.Outlined" Required="true" RequiredError="Informe o cliente" />
             <MudAutocomplete T="string" Label="Quadra" @bind-Value="QuadraInput" SearchFunc="@PesquisarQuadras" Variant="Variant.Outlined" Required="true" RequiredError="Informe a quadra" />
@@ -18,34 +18,35 @@
     <DialogActions>
         <MudButton OnClick="Cancel">Cancelar</MudButton>
         <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
-@*        @if(Inicio != null && Fim != null)
+        @*        @if(Inicio != null && Fim != null)
         {
-            <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
         }*@
     </DialogActions>
 </MudDialog>
 
+
 <MudMessageBox @ref="mboxAviso">
     <MessageContent>
         <MudText Style="@($"color:{Colors.Red.Lighten1};")">@Erro</MudText>
-    </MessageContent>
-    <YesButton></YesButton>
-</MudMessageBox>
+        </MessageContent>
+        <YesButton></YesButton>
+    </MudMessageBox>
 
     @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
-    [Parameter] public DateTime? dia { get; set; }
-
+    [Parameter] public int Id { get; set; }
+    public Models.Locacao Locacao { get; set; }
+    [Parameter] public DateTime? Dia { get; set; }
     MudMessageBox mboxAviso { get; set; }
-    MudForm ?form;
+    MudForm form;
+    public string Erro = "";
+    string[] errors = { };
+    bool success;
+
     private string ClienteInput;
     private string QuadraInput;
-    bool success;
-    string[] errors = { };
 
-    public string Erro = "";
-
-    Models.Locacao Locacao = new Models.Locacao();
     private IList<Models.Locacao> Locacoes = new List<Models.Locacao>();
 
     TimeSpan? Inicio;
@@ -63,35 +64,48 @@
         NomesQuadras = Quadras.Select(x => x.Name);
 
         Clientes = await ClientesRepository.ListarClientesAsync();
-        // NomesCliente = Clientes.Select(x => $"{x.Nome} Cel:{x.Telefone}");
+        //NomesCliente = Clientes.Select(x => $"{x.Nome} CPF:{x.Cpf}");
         NomesCliente = Clientes.Select(x => x.Nome);
 
         Locacoes = await LocacaoRepository.ListarLocacoesAsync();
+        Locacao = Locacoes.First(x => x.Id == Id);
+
+        ClienteInput = Locacao.Cliente.Nome;
+        QuadraInput = Locacao.Quadra.Name;
+        Inicio = Locacao.Inicio.Value.TimeOfDay;
+        Fim = Locacao.Fim.Value.TimeOfDay;
     }
 
 
     async Task Submit()
     {
+
         Locacao.Cliente = Clientes.FirstOrDefault(x => x.Nome == ClienteInput);
-        // Locacao.Cliente = Clientes.FirstOrDefault(x => x.Telefone.Contains(ClienteInput));
         Locacao.Quadra = Quadras.FirstOrDefault(x => x.Name == QuadraInput);
-        Locacao.Inicio = dia + Inicio;
-        Locacao.Fim = dia + Fim;
+        Locacao.Inicio = Dia.Value.Date + Inicio;
+        Locacao.Fim = Dia.Value.Date + Fim;
         if (Locacao != null)
         {
             bool inicioExiste = Locacoes.Any(x => x.Inicio == Locacao.Inicio);
-            bool quadraJaReservada = Locacoes.Any(x =>
-                x.Quadra.Id == Locacao.Quadra.Id && ((x.Inicio >= Locacao.Inicio && x.Inicio < Locacao.Fim) 
-                || (x.Fim > Locacao.Inicio && x.Fim <= Locacao.Fim) ||
-                (x.Inicio <= Locacao.Inicio && x.Fim >= Locacao.Fim)));
-            if (quadraJaReservada)
-            {
-                var clienteQueJaReservou = Locacoes.FirstOrDefault(x =>
-                x.Quadra.Id == Locacao.Quadra.Id && ((x.Inicio >= Locacao.Inicio && x.Inicio < Locacao.Fim)
-                || (x.Fim > Locacao.Inicio && x.Fim <= Locacao.Fim) ||
-                (x.Inicio <= Locacao.Inicio && x.Fim >= Locacao.Fim)));
 
-                Erro = $"{clienteQueJaReservou.Quadra.Name} ja reservada entre {clienteQueJaReservou.Inicio.Value.TimeOfDay} - {clienteQueJaReservou.Fim.Value.TimeOfDay} para: {clienteQueJaReservou.Cliente.Nome} ";
+            bool quadraNaoPodeSerEditada = Locacoes.All(x =>
+                x == Locacao ||
+                (x.Quadra.Id == Locacao.Quadra.Id && (
+                    (x.Inicio >= Locacao.Fim || x.Fim <= Locacao.Inicio) || // Verifica se não há conflito com outras reservas
+                    (x.Inicio < Locacao.Inicio && x.Fim > Locacao.Fim) // Permite que a nova reserva seja totalmente contida dentro da reserva existente
+                )));
+            if (quadraNaoPodeSerEditada)
+            {
+
+                var ClienteReserva = Locacoes.FirstOrDefault(x =>
+                x == Locacao ||
+                (x.Quadra.Id == Locacao.Quadra.Id && (
+                    (x.Inicio >= Locacao.Fim || x.Fim <= Locacao.Inicio) ||
+                    (x.Inicio < Locacao.Inicio && x.Fim > Locacao.Fim) 
+                )));
+
+                Erro = $"{ClienteReserva.Quadra.Name} ja reservada entre {ClienteReserva.Inicio.Value.TimeOfDay} - {ClienteReserva.Fim.Value.TimeOfDay} para: {ClienteReserva.Cliente.Nome} ";
+
                 return;
             }
             if (Inicio < new TimeSpan(12, 0, 0) || Inicio > new TimeSpan(18, 0, 0))
@@ -108,7 +122,7 @@
             }
             else
             {
-                await LocacaoRepository.CriarLocacao(Locacao);
+                await LocacaoRepository.UpdateLocacao(Id, Locacao);
                 MudDialog.Close(DialogResult.Ok(true));
             }
 

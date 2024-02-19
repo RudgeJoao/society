@@ -1,8 +1,10 @@
-﻿@inherits LayoutComponentBase
+﻿@using Radzen.Blazor
+@inherits LayoutComponentBase
 
 <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
+<RadzenComponents/>
 
 <MudLayout>
     @*<MudAppBar Elevation="0" Style="@($"background:{Colors.LightGreen.Darken3};")">*@

@@ -35,7 +35,26 @@ namespace Society.Repositories
 
             await _dbContext.AddAsync(locacao);
             await _dbContext.SaveChangesAsync();
+        }
 
+        public async Task UpdateLocacao(int id, Locacao locacao) 
+        {
+            var existe = await LocacaoExiste(id);
+            if (existe) 
+            {
+                _dbContext.Locacoes.Update(locacao);
+                await _dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                throw new ArgumentException("Quadra não encontrada");
+            }
+        }
+
+        public async Task<bool> LocacaoExiste(int id) 
+        {
+            var existe = await _dbContext.Locacoes.FindAsync(id);
+            return existe is not null ? true : false;
         }
     }
 }

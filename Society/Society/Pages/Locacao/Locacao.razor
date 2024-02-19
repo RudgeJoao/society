@@ -43,7 +43,7 @@
     {
         var parameters = new DialogParameters
         {
-            {"Dia", dia }
+            {"Dia", dia}
         };
 
         var options = new MudBlazor.DialogOptions { CloseOnEscapeKey = true };
@@ -55,7 +55,23 @@
             Locacoes = await LocacaoRepository.ListarLocacoesAsync();
         }
     }
+    private async Task OpenDialogEdit(DateTime? dia,int Id)
+    {
+        var parameters = new DialogParameters
+        {
+            {"Dia", dia},
+            {"Id", Id }
+        };
 
+        var options = new MudBlazor.DialogOptions {CloseOnEscapeKey = true};
+        var dialog = MudDialogService.Show<EditLocacaoDialog>($"Editar reserva para o dia {dia?.ToString("dd/MM/yyyy")} ", parameters, options);
+        var result = await dialog.Result;
+
+        if (result?.Data is bool success && success)
+        {
+            Locacoes = await LocacaoRepository.ListarLocacoesAsync();
+        }
+    }
 
     void OnSlotRender(SchedulerSlotRenderEventArgs args)
     {
@@ -79,7 +95,8 @@
 
     async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<Models.Locacao> args)
     {
-
+        await OpenDialogEdit(args.Start,args.Data.Id);
+        await LocacoesScheduler.Reload();
         //var data = await DialogService.OpenAsync<CreateLocacaoDialog>("Edit Appointment", new Dictionary<string, object> { });
     }
 
@@ -93,8 +110,17 @@
     {
         TooltipService.Open(args.Element, ts =>
     @<RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0" Class="rz-p-6" Style="min-width: 250px; max-width: 500px;">
-        <RadzenText TextStyle="TextStyle.H4" Class="rz-mb-4" Style="color: var(--rz-tooltip-color);">
-            @args.Data.Text
+        <RadzenText TextStyle="TextStyle.DisplayH5" Class="rz-mb-4" Style="color: var(--rz-tooltip-color);">
+            Nome: @args.Data.Text
+            <RadzenText TextStyle="TextStyle.Body1" Class="rz-mb-4" Style="color: var(--rz-tooltip-color);">
+                CPF: @args.Data.Cliente.Cpf
+            </RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" Class="rz-mb-4" Style="color: var(--rz-tooltip-color);">
+                Telefone: @args.Data.Cliente.Telefone
+            </RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" Class="rz-mb-4" Style="color: var(--rz-tooltip-color);">
+                Reserva: @args.Data.Quadra.Name (@args.Data.Inicio.Value.TimeOfDay - @args.Data.Fim.Value.TimeOfDay)
+            </RadzenText>
         </RadzenText>
     </RadzenStack>, new TooltipOptions { Position = TooltipPosition.Right, Duration = null });
     }
