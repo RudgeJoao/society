@@ -86,49 +86,54 @@
         Locacao.Fim = Dia.Value.Date + Fim;
         if (Locacao != null)
         {
-            bool inicioExiste = Locacoes.Any(x => x.Inicio == Locacao.Inicio);
-
-            bool quadraNaoPodeSerEditada = Locacoes.All(x =>
-                x == Locacao ||
-                (x.Quadra.Id == Locacao.Quadra.Id && (
-                    (x.Inicio >= Locacao.Fim || x.Fim <= Locacao.Inicio) || // Verifica se não há conflito com outras reservas
-                    (x.Inicio < Locacao.Inicio && x.Fim > Locacao.Fim) // Permite que a nova reserva seja totalmente contida dentro da reserva existente
-                )));
-            if (quadraNaoPodeSerEditada)
-            {
-
-                var ClienteReserva = Locacoes.FirstOrDefault(x =>
-                x == Locacao ||
-                (x.Quadra.Id == Locacao.Quadra.Id && (
-                    (x.Inicio >= Locacao.Fim || x.Fim <= Locacao.Inicio) ||
-                    (x.Inicio < Locacao.Inicio && x.Fim > Locacao.Fim) 
-                )));
-
-                Erro = $"{ClienteReserva.Quadra.Name} ja reservada entre {ClienteReserva.Inicio.Value.TimeOfDay} - {ClienteReserva.Fim.Value.TimeOfDay} para: {ClienteReserva.Cliente.Nome} ";
-
-                return;
-            }
-            if (Inicio < new TimeSpan(12, 0, 0) || Inicio > new TimeSpan(18, 0, 0))
-            {
-                Erro = "Horarios apenas entre 12:00 e 18:00";
-                return;
-            }
-            else if (Fim > new TimeSpan(18, 0, 0) || Fim < new TimeSpan(12, 0, 0))
-            {
-                Erro = "Horarios apenas entre 12:00 e 18:00";
-                //bool? result = await mboxAviso.Show();
-                //StateHasChanged();
-                return;
-            }
-            else
-            {
-                await LocacaoRepository.UpdateLocacao(Id, Locacao);
-                MudDialog.Close(DialogResult.Ok(true));
-            }
-
+            PodeCriar();
         }
     }
 
+
+    async void PodeCriar()
+    {
+        bool inicioExiste = Locacoes.Any(x => x.Inicio == Locacao.Inicio);
+
+        bool quadraNaoPodeSerEditada = Locacoes.All(x =>
+            x == Locacao ||
+            (x.Quadra.Id == Locacao.Quadra.Id && (
+                (x.Inicio >= Locacao.Fim || x.Fim <= Locacao.Inicio) || // Verifica se não há conflito com outras reservas
+                (x.Inicio < Locacao.Inicio && x.Fim > Locacao.Fim) // Permite que a nova reserva seja totalmente contida dentro da reserva existente
+            )));
+        if (quadraNaoPodeSerEditada)
+        {
+
+            var ClienteReserva = Locacoes.FirstOrDefault(x =>
+            x == Locacao ||
+            (x.Quadra.Id == Locacao.Quadra.Id && (
+                (x.Inicio >= Locacao.Fim || x.Fim <= Locacao.Inicio) ||
+                (x.Inicio < Locacao.Inicio && x.Fim > Locacao.Fim)
+            )));
+
+            Erro = $"{ClienteReserva.Quadra.Name} ja reservada entre {ClienteReserva.Inicio.Value.TimeOfDay} - {ClienteReserva.Fim.Value.TimeOfDay} para: {ClienteReserva.Cliente.Nome} ";
+
+            return;
+        }
+        if (Inicio < new TimeSpan(12, 0, 0) || Inicio > new TimeSpan(18, 0, 0))
+        {
+            Erro = "Horarios apenas entre 12:00 e 18:00";
+            return;
+        }
+        else if (Fim > new TimeSpan(18, 0, 0) || Fim < new TimeSpan(12, 0, 0))
+        {
+            Erro = "Horarios apenas entre 12:00 e 18:00";
+            //bool? result = await mboxAviso.Show();
+            //StateHasChanged();
+            return;
+        }
+        else
+        {
+            await LocacaoRepository.UpdateLocacao(Id, Locacao);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+    
+    }
     void Cancel() => MudDialog.Cancel();
 
     private async Task<IEnumerable<string>> PesquisarClientes(string value)

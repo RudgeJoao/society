@@ -74,46 +74,53 @@
     {
         Locacao.Cliente = Clientes.FirstOrDefault(x => x.Nome == ClienteInput);
         // Locacao.Cliente = Clientes.FirstOrDefault(x => x.Telefone.Contains(ClienteInput));
+
         Locacao.Quadra = Quadras.FirstOrDefault(x => x.Name == QuadraInput);
         Locacao.Inicio = dia + Inicio;
         Locacao.Fim = dia + Fim;
         if (Locacao != null)
         {
-            bool inicioExiste = Locacoes.Any(x => x.Inicio == Locacao.Inicio);
-            bool quadraJaReservada = Locacoes.Any(x =>
-                x.Quadra.Id == Locacao.Quadra.Id && ((x.Inicio >= Locacao.Inicio && x.Inicio < Locacao.Fim) 
-                || (x.Fim > Locacao.Inicio && x.Fim <= Locacao.Fim) ||
-                (x.Inicio <= Locacao.Inicio && x.Fim >= Locacao.Fim)));
-            if (quadraJaReservada)
-            {
-                var clienteQueJaReservou = Locacoes.FirstOrDefault(x =>
-                x.Quadra.Id == Locacao.Quadra.Id && ((x.Inicio >= Locacao.Inicio && x.Inicio < Locacao.Fim)
-                || (x.Fim > Locacao.Inicio && x.Fim <= Locacao.Fim) ||
-                (x.Inicio <= Locacao.Inicio && x.Fim >= Locacao.Fim)));
-
-                Erro = $"{clienteQueJaReservou.Quadra.Name} ja reservada entre {clienteQueJaReservou.Inicio.Value.TimeOfDay} - {clienteQueJaReservou.Fim.Value.TimeOfDay} para: {clienteQueJaReservou.Cliente.Nome} ";
-                return;
-            }
-            if (Inicio < new TimeSpan(12, 0, 0) || Inicio > new TimeSpan(18, 0, 0))
-            {
-                Erro = "Horarios apenas entre 12:00 e 18:00";
-                return;
-            }
-            else if (Fim > new TimeSpan(18, 0, 0) || Fim < new TimeSpan(12, 0, 0))
-            {
-                Erro = "Horarios apenas entre 12:00 e 18:00";
-                //bool? result = await mboxAviso.Show();
-                //StateHasChanged();
-                return;
-            }
-            else
-            {
-                await LocacaoRepository.CriarLocacao(Locacao);
-                MudDialog.Close(DialogResult.Ok(true));
-            }
-
+            PodeCriar();
         }
     }
+
+
+    async void PodeCriar()
+    {
+        bool inicioExiste = Locacoes.Any(x => x.Inicio == Locacao.Inicio);
+        bool quadraJaReservada = Locacoes.Any(x =>
+            x.Quadra.Id == Locacao.Quadra.Id && ((x.Inicio >= Locacao.Inicio && x.Inicio < Locacao.Fim)
+            || (x.Fim > Locacao.Inicio && x.Fim <= Locacao.Fim) ||
+            (x.Inicio <= Locacao.Inicio && x.Fim >= Locacao.Fim)));
+        if (quadraJaReservada)
+        {
+            var clienteQueJaReservou = Locacoes.FirstOrDefault(x =>
+            x.Quadra.Id == Locacao.Quadra.Id && ((x.Inicio >= Locacao.Inicio && x.Inicio < Locacao.Fim)
+            || (x.Fim > Locacao.Inicio && x.Fim <= Locacao.Fim) ||
+            (x.Inicio <= Locacao.Inicio && x.Fim >= Locacao.Fim)));
+
+            Erro = $"{clienteQueJaReservou.Quadra.Name} ja reservada entre {clienteQueJaReservou.Inicio.Value.TimeOfDay} - {clienteQueJaReservou.Fim.Value.TimeOfDay} para: {clienteQueJaReservou.Cliente.Nome} ";
+            return;
+        }
+        if (Inicio < new TimeSpan(12, 0, 0) || Inicio > new TimeSpan(18, 0, 0))
+        {
+            Erro = "Horarios apenas entre 12:00 e 18:00";
+            return;
+        }
+        else if (Fim > new TimeSpan(18, 0, 0) || Fim < new TimeSpan(12, 0, 0))
+        {
+            Erro = "Horarios apenas entre 12:00 e 18:00";
+            return;
+        }
+        else
+        {
+            await LocacaoRepository.CriarLocacao(Locacao);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+    }
+
+
+
 
     void Cancel() => MudDialog.Cancel();
 
