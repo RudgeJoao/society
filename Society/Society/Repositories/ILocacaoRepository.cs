@@ -10,5 +10,7 @@ namespace Society.Repositories
 
         Task UpdateLocacao(int id, Locacao locacao);
 
+        Task DeleteLocacao(int id);
+
     }
 }

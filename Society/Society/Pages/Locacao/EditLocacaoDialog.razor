@@ -16,6 +16,7 @@
         </MudForm>
     </DialogContent>
     <DialogActions>
+        <MudButton Color="Color.Error" OnClick="Delete">Deletar</MudButton>
         <MudButton OnClick="Cancel">Cancelar</MudButton>
         <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
         @*        @if(Inicio != null && Fim != null)
@@ -91,6 +92,12 @@
     }
 
 
+    async Task Delete()
+    {
+        await LocacaoRepository.DeleteLocacao(Id);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
     async void PodeCriar()
     {
         bool inicioExiste = Locacoes.Any(x => x.Inicio == Locacao.Inicio);
@@ -132,7 +139,7 @@
             await LocacaoRepository.UpdateLocacao(Id, Locacao);
             MudDialog.Close(DialogResult.Ok(true));
         }
-    
+
     }
     void Cancel() => MudDialog.Cancel();
 

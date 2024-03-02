@@ -47,7 +47,22 @@ namespace Society.Repositories
             }
             else
             {
-                throw new ArgumentException("Quadra não encontrada");
+                throw new ArgumentException("Locacao nao encontrada");
+            }
+        }
+
+        public async Task DeleteLocacao(int id)
+        {
+            var existe = await LocacaoExiste(id);
+            if (existe)
+            {
+                var locacao = await _dbContext.Locacoes.FindAsync(id);
+                _dbContext.Locacoes.Remove(locacao);
+                await _dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                throw new ArgumentException("Locacao nao encontrada");
             }
         }
 
