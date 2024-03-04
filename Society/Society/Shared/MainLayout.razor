@@ -1,7 +1,7 @@
 ﻿@using Radzen.Blazor
 @inherits LayoutComponentBase
 
-<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="@_theme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 <RadzenComponents/>
@@ -23,14 +23,25 @@
         <NavMenu />
     </MudDrawer>
     <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Large" Class="my-8 pt-8">
+@*         <MudContainer MaxWidth="MaxWidth.Large" Class="my-8 pt-8">
+            @Body
+        </MudContainer> *@
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="padding: 0px">
             @Body
         </MudContainer>
     </MudMainContent>
 </MudLayout>
 
 @code {
-    private MudTheme _theme = new();
+    private MudTheme _theme = new MudTheme()
+        {
+            Palette = new Palette()
+            {
+                Primary = Colors.Green.Darken2,
+                AppbarBackground = Colors.Green.Darken3
+            }
+        };
+
     private bool _isDarkMode;
     bool _drawerOpen = true;
 

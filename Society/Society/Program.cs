@@ -14,7 +14,7 @@ IWebHostEnvironment env = builder.Environment;
 IConfiguration Configuration = new ConfigurationBuilder()
               .SetBasePath(env.ContentRootPath)
               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-              .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: false)
+              .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
               .AddEnvironmentVariables()
               .Build();
 StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);

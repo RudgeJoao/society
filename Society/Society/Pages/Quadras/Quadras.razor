@@ -5,22 +5,26 @@
 @inject IDialogService DialogService
 @using MudBlazor
 
-<MudText Typo="Typo.h2">Quadras</MudText>
-<MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.PersonAddAlt1" Color="Color.Primary" @onclick="OpenDialogCreate">Cadastrar nova quadra</MudButton>
-<MudTable Items="@quadras" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
-    <HeaderContent>
-        <MudTh>Nome</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Nome">@context.Name</MudTd>
-        <MudTd>
-            <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Delete" Size="Size.Small" OnClick="@(() => OnButtonDeleteClicked(@context.Id))" />
-        </MudTd>
-        <MudTd>
-            <MudFab Style="@($"background:{Colors.Amber.Darken2}; color:{Colors.Shades.White};")" StartIcon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => OpenDialogEdit(@context.Id,context))" />
-        </MudTd>
-    </RowTemplate>
-</MudTable>
+
+<div style="padding:12px">
+    <MudText Typo="Typo.h2">Quadras</MudText>
+    <MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.PersonAddAlt1" Color="Color.Primary" @onclick="OpenDialogCreate">Cadastrar nova quadra</MudButton>
+    <MudTable Items="@quadras" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
+        <HeaderContent>
+            <MudTh>Nome</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Nome">@context.Name</MudTd>
+            <MudTd>
+                <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Delete" Size="Size.Small" OnClick="@(() => OnButtonDeleteClicked(@context.Id))" />
+            </MudTd>
+            <MudTd>
+                <MudFab Style="@($"background:{Colors.Amber.Darken2}; color:{Colors.Shades.White};")" StartIcon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => OpenDialogEdit(@context.Id,context))" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</div>
+
  
 <MudMessageBox @ref="mboxExcluir" Title="AVISO!" CancelText="Cancelar">
     <MessageContent>

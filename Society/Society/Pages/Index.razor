@@ -1,7 +1,45 @@
 ﻿@page "/"
-
+@* 
 <PageTitle>Index</PageTitle>
 
 <MudText Typo="Typo.h3" GutterBottom="true">Olá!</MudText>
-<MudText Class="mb-8">Site para gerenciamento de alguel de quadras</MudText>
-@*<MudAlert Severity="Severity.Normal">You can find documentation and examples on our website here: <MudLink Href="https://mudblazor.com" Typo="Typo.body2" Color="Color.Inherit"><b>www.mudblazor.com</b></MudLink></MudAlert>*@
+<MudText Class="mb-8">Site para gerenciamento de alguel de quadras</MudText> *@
+<div class="background" style="background-color: aquamarine; width:100%; height:100vh">
+    <MudCarousel Class="mud-width-full mb-4" Style="height:100%; margin-top:-32px" ShowArrows="@arrows" ShowBullets="@bullets" EnableSwipeGesture="@enableSwipeGesture" AutoCycle="@autocycle" TData="object">
+        <MudCarouselItem Transition="transition" Color="@Color.Primary">
+            <div Class="d-flex align-center justify-center" style="height:100%;">
+                <div class="teste" style="position: absolute; text-align:center">
+                    <MudText Typo="Typo.h1">Gerenciamento de locações</MudText>
+                </div>
+                <MudImage class="carousel-img" Src="/images/SaoPaulo2005.jpg"></MudImage>
+
+            </div>
+        </MudCarouselItem>
+@*         <MudCarouselItem Transition="transition" Color="@Color.Secondary">
+            <div class="d-flex" style="height:100%">
+                <MudImage class="carousel-img" Src="/images/ChuteiraSociety.jpg"></MudImage>
+            </div>
+        </MudCarouselItem>
+        <MudCarouselItem Transition="transition" Color="@Color.Secondary">
+            <div class="d-flex" style="height:100%">
+                <MudImage class="carousel-img" Src="/images/CampNou.jpg"></MudImage>
+            </div>
+        </MudCarouselItem> *@
+    </MudCarousel>
+</div>
+
+<style>
+
+    .carousel-img {
+        width: 100%;
+    }
+</style>
+
+
+@code {
+    private bool arrows = true;
+    private bool bullets = true;
+    private bool enableSwipeGesture = true;
+    private bool autocycle = true;
+    private Transition transition = Transition.Slide;
+}

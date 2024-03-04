@@ -7,21 +7,24 @@
 @inject IDialogService MudDialogService
 @inject Radzen.DialogService DialogService
 @inject TooltipService TooltipService
+@inject NotificationService NotificationService
 
-<MudText Typo="Typo.h3" GutterBottom="true">Escolha o dia da reserva:</MudText>
-<MudText Typo="Typo.subtitle1" GutterBottom="true">Horário de funcionamento de 12:00h - 18:00</MudText>
+<div style="padding:12px">
+    <MudText Typo="Typo.h3" GutterBottom="true">Escolha o dia da reserva:</MudText>
+    <MudText Typo="Typo.subtitle1" GutterBottom="true">Horário de funcionamento de 12:00h - 18:00</MudText>
 
-@*<MudButton Variant="MudBlazor.Variant.Filled" EndIcon="@Icons.Material.Filled.PersonAddAlt1" Color="Color.Primary" OnClick="@(() => OpenDialogCreate(dia))">Cadastrar nova quadra</MudButton>*@
+    @*<MudButton Variant="MudBlazor.Variant.Filled" EndIcon="@Icons.Material.Filled.PersonAddAlt1" Color="Color.Primary" OnClick="@(() => OpenDialogCreate(dia))">Cadastrar nova quadra</MudButton>*@
 
 
-<RadzenScheduler @ref=@LocacoesScheduler SlotRender=@OnSlotRender style="height: 768px;" TItem="Models.Locacao" Data=@Locacoes StartProperty="Inicio" EndProperty="Fim"
-                 TextProperty="Text" SelectedIndex="2"
-                 SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect AppointmentRender=@OnAppointmentRender AppointmentMouseEnter=@OnAppointmentMouseEnter AppointmentMouseLeave=@OnAppointmentMouseLeave>
-    <RadzenDayView />
-    <RadzenWeekView />
-    <RadzenMonthView />
-    <RadzenYearView />
-</RadzenScheduler>
+    <RadzenScheduler @ref=@LocacoesScheduler SlotRender=@OnSlotRender style="height: 768px;" TItem="Models.Locacao" Data=@Locacoes StartProperty="Inicio" EndProperty="Fim"
+                     TextProperty="Text" SelectedIndex="2"
+                     SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect AppointmentRender=@OnAppointmentRender AppointmentMouseEnter=@OnAppointmentMouseEnter AppointmentMouseLeave=@OnAppointmentMouseLeave>
+        <RadzenDayView />
+        <RadzenWeekView />
+        <RadzenMonthView />
+        <RadzenYearView />
+    </RadzenScheduler>
+</div>
 
 
 
@@ -42,12 +45,12 @@
     private async Task OpenDialogCreate(DateTime? dia)
     {
         var parameters = new DialogParameters
-        {
+            {
             {"Dia", dia}
-        };
+            };
 
         var options = new MudBlazor.DialogOptions { CloseOnEscapeKey = true };
-        var dialog = MudDialogService.Show<CreateLocacaoDialog>($"Criar reserva para o dia {dia?.ToString("dd/MM/yyyy")} ",parameters ,options);
+        var dialog = MudDialogService.Show<CreateLocacaoDialog>($"Criar reserva para o dia {dia?.ToString("dd/MM/yyyy")} ", parameters, options);
         var result = await dialog.Result;
 
         if (result?.Data is bool success && success)
@@ -55,15 +58,15 @@
             Locacoes = await LocacaoRepository.ListarLocacoesAsync();
         }
     }
-    private async Task OpenDialogEdit(DateTime? dia,int Id)
+    private async Task OpenDialogEdit(DateTime? dia, int Id)
     {
         var parameters = new DialogParameters
-        {
+            {
             {"Dia", dia},
             {"Id", Id }
-        };
+            };
 
-        var options = new MudBlazor.DialogOptions {CloseOnEscapeKey = true};
+        var options = new MudBlazor.DialogOptions { CloseOnEscapeKey = true };
         var dialog = MudDialogService.Show<EditLocacaoDialog>($"Editar reserva para o dia {dia?.ToString("dd/MM/yyyy")} ", parameters, options);
         var result = await dialog.Result;
 
@@ -88,15 +91,60 @@
 
     async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
     {
-        await OpenDialogCreate(args.Start);
-        await LocacoesScheduler.Reload();
+        if (args.Start.DayOfYear >= DateTime.Today.DayOfYear)
+        {
+            await OpenDialogCreate(args.Start);
+            await LocacoesScheduler.Reload();
 
+            var notification = new NotificationMessage
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Sucesso!",
+                Detail = "Locação feita com sucesso.",
+                Duration = 4000
+            };
+
+            ShowNotification(notification);
+        }
+
+        else
+        {
+            var notification = new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Warning,
+                        Summary = "Aviso",
+                        Detail = "Não é possivel agendar em dias passados",
+                        Duration = 4000
+                    };
+
+            ShowNotification(notification);
+        }
+    }
+
+    async void ShowNotification(NotificationMessage notification)
+    {
+        NotificationService.Notify(notification);
     }
 
     async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<Models.Locacao> args)
     {
-        await OpenDialogEdit(args.Start,args.Data.Id);
-        await LocacoesScheduler.Reload();
+        if (args.Start.DayOfYear >= DateTime.Today.DayOfYear)
+        {
+            await OpenDialogEdit(args.Start, args.Data.Id);
+            await LocacoesScheduler.Reload();
+        }
+        else
+        {
+            var notification = new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Warning,
+                        Summary = "Aviso",
+                        Detail = "Não é possivel alterar em dias passados",
+                        Duration = 4000
+                    };
+
+            ShowNotification(notification);
+        }
         //var data = await DialogService.OpenAsync<CreateLocacaoDialog>("Edit Appointment", new Dictionary<string, object> { });
     }
 

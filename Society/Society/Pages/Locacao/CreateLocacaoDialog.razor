@@ -8,6 +8,7 @@
 
 <MudDialog Style="width: 50%;">
     <DialogContent>
+        <MudText>Locação para o dia @dia.Value.Date.ToShortDateString()</MudText>
         <MudForm Model="Locacao" @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
             <MudTimePicker Label="24 hours" @bind-Time="Inicio" Required="true" RequiredError="Insira o horario"/>
             <MudTimePicker Label="24 hours" @bind-Time="Fim" Required="true" RequiredError="Insira o horario" />
