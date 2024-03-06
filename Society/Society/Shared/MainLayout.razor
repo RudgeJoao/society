@@ -1,15 +1,22 @@
-﻿@inherits LayoutComponentBase
+﻿@using Radzen.Blazor
+@inherits LayoutComponentBase
 
-<MudThemeProvider />
+<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="@_theme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
+<RadzenComponents/>
 
 <MudLayout>
-    <MudAppBar Elevation="0">
+    @*<MudAppBar Elevation="0" Style="@($"background:{Colors.LightGreen.Darken3};")">*@
+        <MudAppBar Elevation="0">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudText Typo="Typo.body1" Class="texto">Gerenciamento de locações</MudText>
+        <MudSpacer />
         <MudSpacer />
         <MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Inherit" Link="https://mudblazor.com/" Target="_blank" />
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/MudBlazor/MudBlazor/" Target="_blank" />
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/RudgeJoao/" Target="_blank" />
+        <MudSwitch @bind-Checked="@_isDarkMode" Color="Color.Primary" Class="ma-4" T="bool" Label="Modo escuro" />
+
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
         <MudDrawerHeader>
@@ -18,13 +25,26 @@
         <NavMenu />
     </MudDrawer>
     <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Large" Class="my-8 pt-8">
+@*         <MudContainer MaxWidth="MaxWidth.Large" Class="my-8 pt-8">
+            @Body
+        </MudContainer> *@
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="padding: 0px">
             @Body
         </MudContainer>
     </MudMainContent>
 </MudLayout>
 
 @code {
+    private MudTheme _theme = new MudTheme()
+        {
+            Palette = new Palette()
+            {
+                Primary = Colors.Green.Darken2,
+                AppbarBackground = Colors.Green.Darken3
+            }
+        };
+
+    private bool _isDarkMode;
     bool _drawerOpen = true;
 
     void DrawerToggle()

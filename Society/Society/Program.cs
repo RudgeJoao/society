@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using Radzen;
 using Society.Data;
 using Society.Repositories;
 using Society.Services;
@@ -13,17 +14,21 @@ IWebHostEnvironment env = builder.Environment;
 IConfiguration Configuration = new ConfigurationBuilder()
               .SetBasePath(env.ContentRootPath)
               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-              .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: false)
+              .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
               .AddEnvironmentVariables()
               .Build();
 StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
 
 // Add services to the container.
+builder.Services.AddRadzenComponents();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
 builder.Services.AddScoped<IClientesRepository,ClientesRepository>();
-builder.Services.AddScoped<IQuadrasRepository, QuadrasRepository>();
+builder.Services.AddScoped<IQuadrasRepository,QuadrasRepository>();
+builder.Services.AddScoped<ILocacaoRepository,LocacaoRepository>();
+builder.Services.AddScoped<TooltipService>();
+builder.Services.AddScoped<DialogService>();
 builder.Services.AddDbContext<DbContext, OracleDbContext>(opt =>
 {
     opt.UseOracle(Configuration["Database:ConnectionString"]);

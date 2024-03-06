@@ -1,0 +1,167 @@
+﻿@using Society.Repositories
+@using Society.Models
+@using Society.Services;
+@inject ILocacaoRepository LocacaoRepository
+@inject IClientesRepository ClientesRepository
+@inject IQuadrasRepository QuadrasRepository
+@inject IDialogService DialogService
+
+<MudDialog Style="width: 50%;">
+    <DialogContent>
+        <MudText>Editando a locação de @Locacao.Cliente.Nome do dia @Locacao.Inicio.Value.Date.ToShortDateString()</MudText>
+        <MudForm Model="Locacao" @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+            <MudTimePicker Label="24 hours" @bind-Time="Inicio" Required="true" RequiredError="Insira o horario" />
+            <MudTimePicker Label="24 hours" @bind-Time="Fim" Required="true" RequiredError="Insira o horario" />
+            <MudAutocomplete T="string" Label="Cliente" @bind-Value="ClienteInput" SearchFunc="@PesquisarClientes" Variant="Variant.Outlined" Required="true" RequiredError="Informe o cliente" />
+            <MudAutocomplete T="string" Label="Quadra" @bind-Value="QuadraInput" SearchFunc="@PesquisarQuadras" Variant="Variant.Outlined" Required="true" RequiredError="Informe a quadra" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error" OnClick="Delete">Deletar</MudButton>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+        @*        @if(Inicio != null && Fim != null)
+        {
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+        }*@
+    </DialogActions>
+</MudDialog>
+
+
+<MudMessageBox @ref="mboxAviso">
+    <MessageContent>
+        <MudText Style="@($"color:{Colors.Red.Lighten1};")">@Erro</MudText>
+        </MessageContent>
+        <YesButton></YesButton>
+    </MudMessageBox>
+
+    @code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public int Id { get; set; }
+    public Models.Locacao Locacao { get; set; }
+    [Parameter] public DateTime? Dia { get; set; }
+    MudMessageBox mboxAviso { get; set; }
+    MudForm form;
+    public string Erro = "";
+    string[] errors = { };
+    bool success;
+
+    private string ClienteInput;
+    private string QuadraInput;
+
+    private IList<Models.Locacao> Locacoes = new List<Models.Locacao>();
+
+    TimeSpan? Inicio;
+    TimeSpan? Fim;
+
+    private IEnumerable<Cliente> Clientes = new List<Cliente>();
+    private IEnumerable<Quadra> Quadras = new List<Quadra>();
+
+    private IEnumerable<string> NomesCliente = new List<string>();
+    private IEnumerable<string> NomesQuadras = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Quadras = await QuadrasRepository.ListarQuadrasAsync();
+        NomesQuadras = Quadras.Select(x => x.Name);
+
+        Clientes = await ClientesRepository.ListarClientesAsync();
+        //NomesCliente = Clientes.Select(x => $"{x.Nome} CPF:{x.Cpf}");
+        NomesCliente = Clientes.Select(x => x.Nome);
+
+        Locacoes = await LocacaoRepository.ListarLocacoesAsync();
+        Locacao = Locacoes.First(x => x.Id == Id);
+
+        ClienteInput = Locacao.Cliente.Nome;
+        QuadraInput = Locacao.Quadra.Name;
+        Inicio = Locacao.Inicio.Value.TimeOfDay;
+        Fim = Locacao.Fim.Value.TimeOfDay;
+    }
+
+
+    async Task Submit()
+    {
+
+        Locacao.Cliente = Clientes.FirstOrDefault(x => x.Nome == ClienteInput);
+        Locacao.Quadra = Quadras.FirstOrDefault(x => x.Name == QuadraInput);
+        Locacao.Inicio = Dia.Value.Date + Inicio;
+        Locacao.Fim = Dia.Value.Date + Fim;
+        if (Locacao != null)
+        {
+            PodeCriar();
+        }
+    }
+
+
+    async Task Delete()
+    {
+        await LocacaoRepository.DeleteLocacao(Id);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    async void PodeCriar()
+    {
+        bool inicioExiste = Locacoes.Any(x => x.Inicio == Locacao.Inicio);
+
+        bool quadraNaoPodeSerEditada = Locacoes.All(x =>
+            x == Locacao ||
+            (x.Quadra.Id == Locacao.Quadra.Id && (
+                (x.Inicio >= Locacao.Fim || x.Fim <= Locacao.Inicio) || // Verifica se não há conflito com outras reservas
+                (x.Inicio < Locacao.Inicio && x.Fim > Locacao.Fim) // Permite que a nova reserva seja totalmente contida dentro da reserva existente
+            )));
+        if (quadraNaoPodeSerEditada)
+        {
+
+            var ClienteReserva = Locacoes.FirstOrDefault(x =>
+            x == Locacao ||
+            (x.Quadra.Id == Locacao.Quadra.Id && (
+                (x.Inicio >= Locacao.Fim || x.Fim <= Locacao.Inicio) ||
+                (x.Inicio < Locacao.Inicio && x.Fim > Locacao.Fim)
+            )));
+
+            Erro = $"{ClienteReserva.Quadra.Name} ja reservada entre {ClienteReserva.Inicio.Value.TimeOfDay} - {ClienteReserva.Fim.Value.TimeOfDay} para: {ClienteReserva.Cliente.Nome} ";
+
+            return;
+        }
+        if (Inicio < new TimeSpan(12, 0, 0) || Inicio > new TimeSpan(18, 0, 0))
+        {
+            Erro = "Horarios apenas entre 12:00 e 18:00";
+            return;
+        }
+        else if (Fim > new TimeSpan(18, 0, 0) || Fim < new TimeSpan(12, 0, 0))
+        {
+            Erro = "Horarios apenas entre 12:00 e 18:00";
+            //bool? result = await mboxAviso.Show();
+            //StateHasChanged();
+            return;
+        }
+        else
+        {
+            await LocacaoRepository.UpdateLocacao(Id, Locacao);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+
+    }
+    void Cancel() => MudDialog.Cancel();
+
+    private async Task<IEnumerable<string>> PesquisarClientes(string value)
+    {
+
+        if (string.IsNullOrEmpty(value))
+            return NomesCliente;
+
+        var query = NomesCliente.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+        return query;
+    }
+
+    private async Task<IEnumerable<string>> PesquisarQuadras(string value)
+    {
+
+        if (string.IsNullOrEmpty(value))
+            return NomesQuadras;
+
+        var query = NomesQuadras.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+        return query;
+    }
+
+}
