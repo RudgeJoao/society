@@ -3,7 +3,7 @@
 @using Society.Services;
 @inject IClientesRepository ClientesRepository
 @inject IDialogService DialogService
-
+@inject Radzen.NotificationService NotificationService
 
 <div style="padding:12px">
     <MudText Typo="Typo.h2">Clientes</MudText>
@@ -52,6 +52,8 @@
         clientes = await ClientesRepository.ListarClientesAsync();
     }
 
+    async void ShowNotification(Radzen.NotificationMessage notification) => NotificationService.Notify(notification);
+
     private async Task  OpenDialogCreate()
     {
         var options = new DialogOptions { CloseOnEscapeKey = true };
@@ -60,6 +62,15 @@
 
         if (result?.Data is bool success && success)
         {
+            var notification = new Radzen.NotificationMessage
+                {
+                    Severity = Radzen.NotificationSeverity.Success,
+                    Summary = "Sucesso!",
+                    Detail = "Cliente cadastrado com sucesso!",
+                    Duration = 4000
+                };
+
+            ShowNotification(notification);
            clientes =  await ClientesRepository.ListarClientesAsync();
         }
 
@@ -86,7 +97,16 @@
 
         if (result is true)
         {
-            await Excluir(id);  
+            await Excluir(id);
+            var notification = new Radzen.NotificationMessage
+                {
+                    Severity = Radzen.NotificationSeverity.Error,
+                    Summary = "Excluido",
+                    Detail = "Cliente excluído",
+                    Duration = 4000
+                };
+
+            ShowNotification(notification);
             clientes = await ClientesRepository.ListarClientesAsync();
         }
     }

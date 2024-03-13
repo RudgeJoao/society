@@ -4,7 +4,7 @@
 @inject IQuadrasRepository QuadrasRepository
 @inject IDialogService DialogService
 @using MudBlazor
-
+@inject Radzen.NotificationService NotificationService
 
 <div style="padding:12px">
     <MudText Typo="Typo.h2">Quadras</MudText>
@@ -47,6 +47,8 @@
         quadras = await QuadrasRepository.ListarQuadrasAsync();
     }
 
+    async void ShowNotification(Radzen.NotificationMessage notification) => NotificationService.Notify(notification);
+
     private async Task OpenDialogCreate()
     {
         var options = new DialogOptions {CloseOnEscapeKey = true };
@@ -56,6 +58,15 @@
         if (result?.Data is bool success && success)
         {
             quadras = await QuadrasRepository.ListarQuadrasAsync();
+            var notification = new Radzen.NotificationMessage
+                {
+                    Severity = Radzen.NotificationSeverity.Success,
+                    Summary = "Sucesso!",
+                    Detail = "Quadra criada com sucesso!",
+                    Duration = 4000
+                };
+
+            ShowNotification(notification);
         }
     }
 
@@ -67,6 +78,15 @@
         if (result is true)
         {
             await Excluir(id);
+            var notification = new Radzen.NotificationMessage
+                {
+                    Severity = Radzen.NotificationSeverity.Error,
+                    Summary = "Excluido",
+                    Detail = "Quadra excluída",
+                    Duration = 4000
+                };
+
+            ShowNotification(notification);
             quadras = await QuadrasRepository.ListarQuadrasAsync();
         }
     }
